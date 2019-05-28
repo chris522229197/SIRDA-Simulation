@@ -147,11 +147,11 @@ epimodel <- init_epimodel(popsize = 750,                                        
                           d_meas_process = d_meas_process)
 
 epimodel <- init_settings(epimodel,
-                          niter = 100000,  # this was set to 100,000 in the paper
+                          niter = 1000,  # this was set to 100,000 in the paper
                           save_params_every = 1, 
                           save_configs_every = 250, # this was set to 250 in the paper 
                           kernel = list(gibbs_kernel_SIR),
-                          configs_to_redraw = 75, # this was set to 75 in the paper
+                          configs_to_redraw = 25, # this was set to 75 in the paper
                           analytic_eigen = "SIR", # compute eigen decompositions and matrix inverses analytically
                           ecctmc_method = "unif")   # sample subject paths in interevent intervals via modified rejection sampling
 epimodel <- fit_epimodel(epimodel, monitor = FALSE)
