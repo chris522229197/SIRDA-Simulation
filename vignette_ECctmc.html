@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Jonathan Fintzi" />
+
+<meta name="date" content="2019-05-23" />
+
+<title>Simulating sample paths for endpoint-conditioned continuous time Markov chains via the ECctmc package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceLine, a.sourceLine { display: inline-block; min-height: 1.25em; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; }
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+div.sourceLine, a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource div.sourceLine, .numberSource a.sourceLine
+  { position: relative; }
+pre.numberSource div.sourceLine::before, .numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em; }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; color: #aaaaaa;  padding-left: 4px; }
+@media screen {
+a.sourceLine::before { text-decoration: underline; color: initial; }
+}
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.bn { color: #40a070; } /* BaseN */
+code span.fl { color: #40a070; } /* Float */
+code span.ch { color: #4070a0; } /* Char */
+code span.st { color: #4070a0; } /* String */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.ot { color: #007020; } /* Other */
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.fu { color: #06287e; } /* Function */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code span.cn { color: #880000; } /* Constant */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.im { } /* Import */
+code span.va { color: #19177c; } /* Variable */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.op { color: #666666; } /* Operator */
+code span.bu { } /* BuiltIn */
+code span.ex { } /* Extension */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.at { color: #7d9029; } /* Attribute */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Simulating sample paths for endpoint-conditioned continuous time Markov chains via the ECctmc package</h1>
+<h4 class="author"><em>Jonathan Fintzi</em></h4>
+<h4 class="date"><em>2019-05-23</em></h4>
+
+
+
+<p>The <em>ECctmc</em> package is a lightweight C++ implementation of the modified rejection sampling and uniformization algorithms detailed in Hobolth and Stone (2009). These algorithms allow users to efficiently simulate sample paths for continuous time Markov chains (CTMC) with discrete state spaces conditional on the state of the chain at the endpoints of the sampling interval. This implementation assumes that state sojourn times are exponentially distributed, and that the process is time-homogeneous. In this vignette we will briefly outline the two algorithms and demonstrate how to call the sampling functions to obtain a collection of paths. This vignette is not intended to be a completely describe the mathematical details of the algorithms or their relative efficiency. For details on the modified rejection sampling and uniformization algorithms, we suggest the Hobolth and Stone (2009) paper, which is really quite excellent.</p>
+<div id="notation" class="section level2">
+<h2>Notation</h2>
+<p>We are interested in sample paths for a finite state CTMC, <span class="math inline">\(X(t)\)</span>, over the time interval [0, T], conditional on <span class="math inline">\(X(0) = a\)</span> and <span class="math inline">\(X(T) = b\)</span>. We suppose that the chain has rate matrix <span class="math inline">\(Q\)</span>, where <span class="math inline">\(Q_{i,j}\)</span> denotes the instantaneous rate of change from state <span class="math inline">\(i\)</span> to state <span class="math inline">\(j\)</span>, and <span class="math inline">\(Q_i = Q_{i,i} = -\sum_{j\neq i} Q_{i,j} &gt; 0\)</span> is the rate of exit out of state <span class="math inline">\(i\)</span>. We will use <span class="math inline">\(\tau\)</span> to denote waiting times.</p>
+</div>
+<div id="forward-sampling---gillespies-direct-algorithm" class="section level2">
+<h2>Forward sampling - Gillespie’s direct algorithm</h2>
+<ol style="list-style-type: decimal">
+<li>Sample <span class="math inline">\(\tau\sim exp(Q_a)\)</span>. If <span class="math inline">\(\tau&gt;T\)</span>, then <span class="math inline">\(X(t) = a \forall t\in[0, T]\)</span>.</li>
+<li>If <span class="math inline">\(\tau &lt; T\)</span>, sample the next state, <span class="math inline">\(j\)</span> from the discrete probability distribution with masses given by <span class="math inline">\(\frac{Q_{a,j}}{Q_a}\)</span>, for <span class="math inline">\(j\neq a\)</span>. Repeat step 1, starting in <span class="math inline">\(X(\tau)=j\)</span>.</li>
+</ol>
+<p>Simple rejection sampling retains only the paths where <span class="math inline">\(X(T)=b\)</span>.</p>
+</div>
+<div id="modified-rejection-sampling" class="section level2">
+<h2>Modified rejection sampling</h2>
+<p>If <span class="math inline">\(a=b\)</span>,</p>
+<ol style="list-style-type: decimal">
+<li>Draw a path using the forward sampling algorithm, outlined above.</li>
+<li>Accept the path if <span class="math inline">\(X(T)=a\)</span>. Otherwise, repeat step 1.</li>
+</ol>
+<p>If <span class="math inline">\(a\neq b\)</span>,</p>
+<ol style="list-style-type: decimal">
+<li>Sample the first time of state transition using the inverse-CDF method. i.e. For <span class="math inline">\(u\sim Unif(0,1)\)</span>, the distribution of <span class="math inline">\(\tau\)</span>, given that at least one state transition occurs, may be sampled from by transforming <span class="math inline">\(u\)</span> by <span class="math display">\[ F^{-1}(u) = -log(1 - u(1 - \exp(-Q_a T)))/Q_a \]</span></li>
+<li>Sample the next state, <span class="math inline">\(j\)</span> from the discrete probability distribution with masses given by <span class="math inline">\(\frac{Q_{a,j}}{Q_a}\)</span>, for <span class="math inline">\(j\neq a\)</span>.</li>
+<li>Simulate the rest of the path in the interval <span class="math inline">\([\tau, T]\)</span> using the forward sampling algorithm, starting at <span class="math inline">\(X(\tau) = j\)</span>.</li>
+<li>Accept the path if <span class="math inline">\(X(T)=b\)</span>. Otherwise, return to step 1.</li>
+</ol>
+<p>Modified rejection sampling improves upon simple rejection sampling by avoiding sampling constant paths. It will be efficient when the time interval is small and the path is non-constant. However, when transitions into the final state are unlikely, many paths will be rejected.</p>
+</div>
+<div id="uniformization" class="section level2">
+<h2>Uniformization</h2>
+<p>We begin by defining an auxilliary stochastic process, <span class="math inline">\(Y(t)\)</span>, for which we construct a transition matrix <span class="math display">\[ R = I + Q/\mu \]</span> where <span class="math inline">\(\mu = \max_i Q_i\)</span>. Let <span class="math inline">\(R^n_{i,j}\)</span> denote the <span class="math inline">\(i,j\)</span> element of the <span class="math inline">\(n^{th}\)</span> power of <span class="math inline">\(R\)</span>. Let <span class="math inline">\(P_(T)=e^{QT}\)</span> be the discrete transition probability matrix of <span class="math inline">\(X(t)\)</span> over the interval, and <span class="math inline">\(P_{a,b}(T)\)</span> be it’s <span class="math inline">\(a,b\)</span> element. We proceed as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Let <span class="math inline">\(u\sim Unif(0,1)\)</span>. Sample the number of jumps in <span class="math inline">\([0,T]\)</span> conditional on <span class="math inline">\(X(0)=a\)</span> and <span class="math inline">\(X(T)=b\)</span> according to the discrete distribution with masses given by <span class="math display">\[ \Pr(N=n | X(0)=a, X(T)=b) = e^{\mu T} \frac{(\mu T)^n}{n!}R^n_{a,b}/P_{a,b}(T)\]</span> by taking <span class="math inline">\(n\)</span> to be the first time that the cumulative sum of the probability masses above exceeds <span class="math inline">\(u\)</span>. Save the matrices <span class="math inline">\(R^n\)</span> in these cumulative sums.</li>
+<li>If <span class="math inline">\(n=0,\ X(t)=a\ \forall t\in [0,T]\)</span>.</li>
+<li>If <span class="math inline">\(n=1\)</span> and <span class="math inline">\(a=b,\ X(t)=a\ \forall t\in [0,T]\)</span>.</li>
+<li>If <span class="math inline">\(n=1\)</span> and <span class="math inline">\(a\neq b\)</span>, draw <span class="math inline">\(\tau\sim Unif(0,T)\)</span>. Then <span class="math inline">\(X(t)=a,\ 0\leq t &lt; \tau\)</span>, and <span class="math inline">\(X(t)=b,\ \tau \leq t \leq T\)</span>.</li>
+<li>If <span class="math inline">\(n\geq 2\)</span>, sample the times of state transition, <span class="math inline">\(\tau_1,\dots,\tau_n\)</span>, uniformly and independently within the interval <span class="math inline">\([0,T]\)</span> and order. Then, sample the sequence of states <span class="math inline">\(X(\tau_i),\ i=1,\dots,n-1,\)</span> from the discrete distribution with masses given by <span class="math display">\[ \Pr(X(\tau_i) =x_i | X(\tau_{i-1}) = x_{i-1}, X(T)=b)) = \frac{R_{x_{i-1},x_i} (R^{n-i})_{x_i,b}}{(R^{n-i+1})_{x_{i-1},b}} \]</span></li>
+</ol>
+</div>
+<div id="simulating-sample-paths" class="section level2">
+<h2>Simulating sample paths</h2>
+<p>We may simulate sample paths by calling the <code>sample_path()</code> function, which returns either a matrix containing the CTMC path, or a list of matrices each containing a path. This function has only a few argments that must be specified. There are:</p>
+<ul>
+<li><em>a,b</em>: states at the interval endpoints, each of which is in 1,…,# states.</li>
+<li><em>t0,t1</em>: times of the interval endpoints.</li>
+<li><em>Q</em>: CTMC rate matrix.</li>
+</ul>
+<p>The default number of paths is 1, although the user can request any number of paths to be returned in a list. We can optionally specify a method, either “mr”, or “unif”, though the default is modified rejection sampling. If uniformization is specified, the user can optionally provide a vector of eigen values, the matrix of corresponding eigen vectors, and the inverse eigen vector matrix. This may help speed up computations if the eigen decomposition has been computed beforehand. When multiple paths are requested, the eigen decomposition is computed once and cached for re-use, so there is no need to supply a pre-computed eigen decomposition.</p>
+<pre class="sourceCode r" id="cb1"><code class="sourceCode r"><div class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">set.seed</span>(<span class="dv">183427</span>)</div>
+<div class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">require</span>(ECctmc)</div></code></pre>
+<pre><code>## Loading required package: ECctmc</code></pre>
+<pre class="sourceCode r" id="cb3"><code class="sourceCode r"><div class="sourceLine" id="cb3-1" data-line-number="1"><span class="co"># rates</span></div>
+<div class="sourceLine" id="cb3-2" data-line-number="2">r1 &lt;-<span class="st"> </span><span class="dv">1</span> <span class="co"># 1-&gt;2</span></div>
+<div class="sourceLine" id="cb3-3" data-line-number="3">r2 &lt;-<span class="st"> </span><span class="fl">0.75</span> <span class="co"># 2-&gt;3</span></div>
+<div class="sourceLine" id="cb3-4" data-line-number="4">r3 &lt;-<span class="st"> </span><span class="fl">0.5</span> <span class="co"># 3-&gt;1</span></div>
+<div class="sourceLine" id="cb3-5" data-line-number="5">r4 &lt;-<span class="st"> </span><span class="fl">0.5</span> <span class="co"># 3-&gt; 2</span></div>
+<div class="sourceLine" id="cb3-6" data-line-number="6">Q &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="op">-</span>r1, r1, <span class="dv">0</span>, <span class="dv">0</span>, <span class="op">-</span>r2, r2, r3, r4, <span class="op">-</span>(r3<span class="op">+</span>r4)), <span class="dt">nrow =</span> <span class="dv">3</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</div>
+<div class="sourceLine" id="cb3-7" data-line-number="7"></div>
+<div class="sourceLine" id="cb3-8" data-line-number="8"><span class="co"># sample path</span></div>
+<div class="sourceLine" id="cb3-9" data-line-number="9">path &lt;-<span class="st"> </span><span class="kw">sample_path</span>(<span class="dt">a=</span><span class="dv">1</span>, <span class="dt">b=</span><span class="dv">3</span>, <span class="dt">t0=</span><span class="dv">0</span>, <span class="dt">t1=</span><span class="dv">5</span>, <span class="dt">Q=</span>Q)</div>
+<div class="sourceLine" id="cb3-10" data-line-number="10">path</div></code></pre>
+<pre><code>##          time state
+## [1,] 0.000000     1
+## [2,] 1.851501     2
+## [3,] 2.680046     3
+## [4,] 2.890389     2
+## [5,] 3.961490     3
+## [6,] 5.000000     3</code></pre>
+<pre class="sourceCode r" id="cb5"><code class="sourceCode r"><div class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">plot</span>(<span class="kw">stepfun</span>(<span class="dt">x=</span>path[<span class="dv">1</span><span class="op">:</span>(<span class="kw">nrow</span>(path)<span class="op">-</span><span class="dv">1</span>),<span class="st">&quot;time&quot;</span>], <span class="dt">y =</span> path[,<span class="st">&quot;state&quot;</span>]), <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">5</span>), <span class="dt">xlab =</span> <span class="st">&quot;Time&quot;</span>, <span class="dt">ylab =</span> <span class="st">&quot;State&quot;</span>, <span class="dt">main =</span> <span class="st">&quot;Sample path&quot;</span>)</div></code></pre>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAYAAAAUg66AAAAEGWlDQ1BrQ0dDb2xvclNwYWNlR2VuZXJpY1JHQgAAOI2NVV1oHFUUPrtzZyMkzlNsNIV0qD8NJQ2TVjShtLp/3d02bpZJNtoi6GT27s6Yyc44M7v9oU9FUHwx6psUxL+3gCAo9Q/bPrQvlQol2tQgKD60+INQ6Ium65k7M5lpurHeZe58853vnnvuuWfvBei5qliWkRQBFpquLRcy4nOHj4g9K5CEh6AXBqFXUR0rXalMAjZPC3e1W99Dwntf2dXd/p+tt0YdFSBxH2Kz5qgLiI8B8KdVy3YBevqRHz/qWh72Yui3MUDEL3q44WPXw3M+fo1pZuQs4tOIBVVTaoiXEI/MxfhGDPsxsNZfoE1q66ro5aJim3XdoLFw72H+n23BaIXzbcOnz5mfPoTvYVz7KzUl5+FRxEuqkp9G/Ajia219thzg25abkRE/BpDc3pqvphHvRFys2weqvp+krbWKIX7nhDbzLOItiM8358pTwdirqpPFnMF2xLc1WvLyOwTAibpbmvHHcvttU57y5+XqNZrLe3lE/Pq8eUj2fXKfOe3pfOjzhJYtB/yll5SDFcSDiH+hRkH25+L+sdxKEAMZahrlSX8ukqMOWy/jXW2m6M9LDBc31B9LFuv6gVKg/0Szi3KAr1kGq1GMjU/aLbnq6/lRxc4XfJ98hTargX++DbMJBSiYMIe9Ck1YAxFkKEAG3xbYaKmDDgYyFK0UGYpfoWYXG+fAPPI6tJnNwb7ClP7IyF+D+bjOtCpkhz6CFrIa/I6sFtNl8auFXGMTP34sNwI/JhkgEtmDz14ySfaRcTIBInmKPE32kxyyE2Tv+thKbEVePDfW/byMM1Kmm0XdObS7oGD/MypMXFPXrCwOtoYjyyn7BV29/MZfsVzpLDdRtuIZnbpXzvlf+ev8MvYr/Gqk4H/kV/G3csdazLuyTMPsbFhzd1UabQbjFvDRmcWJxR3zcfHkVw9GfpbJmeev9F08WW8uDkaslwX6avlWGU6NRKz0g/SHtCy9J30o/ca9zX3Kfc19zn3BXQKRO8ud477hLnAfc1/G9mrzGlrfexZ5GLdn6ZZrrEohI2wVHhZywjbhUWEy8icMCGNCUdiBlq3r+xafL549HQ5jH+an+1y+LlYBifuxAvRN/lVVVOlwlCkdVm9NOL5BE4wkQ2SMlDZU97hX86EilU/lUmkQUztTE6mx1EEPh7OmdqBtAvv8HdWpbrJS6tJj3n0CWdM6busNzRV3S9KTYhqvNiqWmuroiKgYhshMjmhTh9ptWhsF7970j/SbMrsPE1suR5z7DMC+P/Hs+y7ijrQAlhyAgccjbhjPygfeBTjzhNqy28EdkUh8C+DU9+z2v/oyeH791OncxHOs5y2AtTc7nb/f73TWPkD/qwBnjX8BoJ98VQNcC+8AACwuSURBVHgB7Z0HlBTF2oY/cs5RQDKoIDkjUYErXgUTooAEE/mCoqKgIkG8CBwDooCKiKACRhAOUUUEkSBBJIkCkjMCkgTqr7f+M31nd2dndmenZ6aat86Z3e7q6gpP9bxT9VVVVzqlndCRAAmQQAwIpI9BmkySBEiABAwBChAfBBIggZgRoADFDD0TJgESoADxGSABEogZAQpQzNAzYRIgAQoQnwESIIGYEaAAxQw9EyYBEqAA8RkgARKIGQEKUMzQM2ESIAEKEJ8BEiCBmBGgAMUMPRMmARKgAPEZIAESiBkBClDM0DNhEiABChCfARIggZgRoADFDD0TJgESoADxGSABEogZAQpQzNAzYRIgAQoQnwESIIGYEaAAxQw9EyYBEqAA8RkgARKIGQEKUMzQM2ESIAEKEJ8BEiCBmBGgAMUMPRMmARKgAPEZIAESiBkBClDM0DNhEiABChCfARIggZgRoADFDD0TJgESoADxGSABEogZAQpQzNAzYRIgAQoQnwESIIGYEaAAxQw9EyYBEqAA8RkgARKIGQEKUMzQh5ewUkrGjx8v99xzj1SsWFHy5csn1atXl86dO8uvv/4aXqQxuuuVV16Rm2++2XyuXLkSo1ykPtmdO3fKX3/95dx44MABpxwffPCB48+DFBDQDzSdJQTOnDmj7rrrLqWrNeAnffr0atq0aZaURqmuXbs65bh06VLc5xv8Bw8erLJmzap+++03J79//PGHU44hQ4Y4/jwITSBjCjSKQeKEwPTp0+WLL74wualTp478+9//lsKFC8s333wjn376qaAV0b17d2nZsqXxj5NseyYbY8aMkZdeeskz5YmHgrALFg+1kMI8fP311yZkzpw55fvvvxf9ays9e/aUWbNmGTHCxb///lt++OGHJDGePn1atm/fLug+nDt3Lsn1QB4It3///iSXTp06JUePHk3iH8jj8uXLsnv3btG/hYEuB/XDPbt27ZKzZ88GDRfqYkrygDAo69atW+XQoUOhogx53Zd33bILGfaqDhC6kcQQ8UJA232cpv64cePUP//842Rtz549auHChWr58uVKf4Ec/y1btqibbrrJuU8/7Cpz5syqS5cuSguME+6rr75SOXLkMJ9ffvlFtW3bVmXKlMncV6ZMGbVq1Sq1b98+1bx5c5UhQwaVLl06ValSJbVx40YnjnXr1jlxLFq0SOnWmMqdO7eJI2/evOq1115zwuIguS7Y+fPnVf/+/VWuXLnMvehaVqtWTa1YsSLB/YFOUpsHxDFs2DCF/IGN71O6dGm1ZMkSJ4m7777b4YEw2bJlU0WLFjXX/btgL7zwgho+fLgTH7prPXr0UCgTXVIC+GWis4SA7oI5XxB8CfCladeunXrvvffU3r17k5RC/6qrunXrOvcUK1ZM4cvs+5Jpw7Vzz+eff+74X3PNNSZckSJFHD9t7FbFixc3wpMnTx7Hv0SJEkq3UEw8a9eudfzLli1rjn0i5ktz5MiRTprJCdAtt9zixAMR8uU5Y8aMRmSdCAIcpDYPc+bMcdLKnj27yp8/v3OOvOsWkUnltttuc/x9ZYG4wvkLkI8N2EGofWFpGzKokvyhACVBEt8effv2dR5q38ON//iS3n777ergwYNOAZYuXapuuOEG88ut7UTGX4/eqJIlS5o4rr32WiesvwBBqP78809zTXfxnPQKFiyofv/9d9NyeuCBBxx/tJjg/L/8aCG9+uqrSnf9lLZbKQgV8qm7j+rw4cMmfCABmjFjhhMvWkEw/CLNqlWrGv9atWqZe5P7k9o8dOrUyYhOq1at1MWLF5W2o6nXX3/dyQPEHQ6tP3/2aOEhX3D+AgSRXLBggfHHdV8LEC04uqQEKEBJmcS9j7b/mC4UWiX+IoTj8uXLO+LhKwi+WHAXLlxQ2j6katasae5D68Ln/AVo9OjRPm/lLwiDBg1y/P1bY2hFwPl/+RMLxdtvv+3k9csvvzThAwlQ+/btTTi0HnxChcD+orB582Zzf6A/qc2DLw4fIwiNNjY7eR07dqwviHrxxRcd/+RGwe644w4nPA6aNWtm7oEA0yUlwFEw/a21zTVu3FjwgeF0zZo1on9x5Y033pBjx47Jjh075P333xdtizDF0l8o0UPzMm/ePPnpp59Ei5BTXP04OMf+B/rL4pxqW4dzrFtMzrG2FznH/nH6PFu3bu07NP8xV8nnkMfknP5im0u6RSfa3uQE8zdEa3uX6Jadcy25g5TmQQuoaBuYaBuaIG5/lxwj/zD+x9pe5n8qultnzjE4QJeUAAUoKZO49NFdIiMymPSmjcrSq1cv0a0EqVevnvl069ZN8PBDlL777jsjQJs2bZIWLVqYUR1teDbHGKKHGOkuhOBLHshpw6njrbtSzrG2jzjHoQ7840gcNrl0Ec43QoeyYbTP53CMKQdwKGNKXEry0Lt3b3nrrbdMdNpuJf369TMTPOEPFyyvJkCiP5gY6u9896dWyPzj8PIxBciS2tUGZ9HdEMGw7ty5c6VDhw4CP5/D0LjvIYfYwCE8hpSzZMliZkmXK1fO+EOg4HxfDnOSgj/+YhQqOFpm/k53m5xT3U10jhMfQET1yJ0pJ6YdaLuTCYLyaaOw+LfIEt+b+DxUHtA69InPI488Iu+8846JYv369U5UyTHysXYC8iAsAoF/AsOKije5SUAbM0WPDpkksAygTZs2MnnyZNEGYNH2FdHGVDMREQG0MdqEw7wfOLQmfL/M2jAq3377rfF3s1swe/ZsMz8JCUHw9OiXSVPbnaRBgwbmONAfPfxvvCG02hZluoyYYAl/tIJq1KghEKOUuFB58PFBXAUKFHCifPfdd51jbQR3jiGAPqdHHUUb/H2n/B8mAbaAwgQXi9smTZpkvoDHjx+XZcuWmU/ifDRs2FA6duxovLUB1ExYhP0ENpMqVaqYc9/kOD2PSE6ePJmgJZU4vnDP0Qq77777RA9LJ1g39eyzzzqtmkBxa8O0TJgwQfR8HsFaMdiz0ArxTQ5EFwlinBIXKg+wS/nyh7R+/PFHM2kSEyfR2kMr58iRI05SvhYkPPBjgDB6fo9znQepJ8AWUOqZxewOPXwuq1evNgKjh3sT5AMGYtgt0LrxtXb0qJXpqiGgHlEyLRGIgh6Fcu6FPcgNp0eM5OGHHxbMwIaDMRYtGghQMAfRwExuPVFS0FqCAOBTu3ZtI0gQqJS6UHkAp5kzZ4qedmDEBrPLYV+CQRqLZOH8+egRLmnSpInxhzjBEA/DP10aCGiQdBYSwCxozD/Rdg6FuT3BnP6SqA0bNjgTBoOFTcs1/yFw36xn3V1SepV+glnbKU0Dc3Iw3K0FKKW3JJgKkNI8gOW2bduUXvaRonR0C8nkC/mjSxuBhD+jaRAy3hpdAmgBwWCbeNg3UC4wepWaEaxAcYTrh1aMXrIR1u3o4gQzWKc00lB5AEu82iSlDi1RusgQYBcsMhwZCwmQQBgE2AIKAxpvCUwANhG99sxc1GuhAgdy2Tce8uByET0VfTr04DxVIhaGBEjAGgLsgllTVcwoCXiPAAXIe3XKEpGANQQoQNZUFTNKAt4jQAHyXp2yRCRgDQEKkDVVxYySgPcIUIC8V6csEQlYQ4ACZE1VMaMk4D0CFCDv1SlLRALWEKAAWVNVzCgJeI8ABch7dcoSkYA1BChA1lQVM0oC3iNAAfJenbJEJGANAQqQNVXFjJKA9whQgLxXpywRCVhDgAJkTVUxoyTgPQIUIO/VKUtEAtYQoABZU1XMKAl4jwAFyHt1yhKRgDUEKEDWVBUzSgLeI0AB8l6dskQkYA0B6wUI79THzpnYrpiOBEjALgJWCtC+fftk4MCBUrp0acFWvoULF5YCBQqYfb6rVasmAwYMkDNnzthVE8wtCVyFBKzblkdviyuNGjUS7JrZrl07KVu2rNn1E+doBe3cuVM+/fRTs9f3kiVLpFy5cldhtbLIJGAHAesEqE+fPqL3OZfFixdLlixZAlLWe31L69at5aabbpKhQ4cGDENPEiCB2BOwrgu2fv166dy5c7LiA6SZMmWSrl27yvz582NPmDkgARJIloB1AtSwYUNZvnx5sgXyXfjmm2+kePHivlP+JwESiEMC1u0N36FDB4EIHTp0SDp27GhsPDBAp0+f3tiAdu3aJdOnT5d58+aZbppbzN944w15++23jeHbrTTiNV6MPF6+fNlkL0OGDMYeF828Iv0rV64YOx/qHZ9YuFhzCFXmrFmzypw5cyRXrlyhgsbsunU2IJDasWOHdO/eXb777jvzICam16JFCxk0aJA0b9488aWIndepU0dGjBhx1QkQxH3KlClmBBK2tm3btsnEiROlatWqEWMbLKKTJ0/Kk08+KceOHZNixYrJzz//LCVLlpSPPvpIIIbRch9//LG8//77UqpUKbl06ZJs3bpV3nrrLalRo0a0shAyHTz/K1euFIwMx63TKm6tu3Dhgvrtt9/UokWLlG7xKG0fUkePHo1KeerXr69WrFgRlbTiJZFPPvlE6QdZ/fnnn06W9GCA8VuwYIHj59bB6dOnTVrdunVzktBffqWFRzVt2lRpQXT83TyYNWuWyYdubTvJLF261PjNnTvX8Yv1gf5RMN+JWOcjWPpoxtKFQeBqE6CzZ8+aL9j27duT0MIXsm7dukn8I+0xatQo1aBBg4DRoj6+/vrrgNci6Xn+/Hmlp3yoTZs2JYn2yy+/VLoFpHT3MMm1WHjYIEDW2YBS2pTUv5aSMWNGyZYtW0pvMeH0L5lMmDAh5D2YCrB69WrRX4iQYb0Q4Pfff5dKlSpJhQoVTHF0K0RgbytatKjpBoNF+/btI26PQRevd+/e8vDDD8tPP/0kTzzxhEl///790qRJE0FXGA71jcmp06ZNM+du/Tl16pTkyJHDdL+RxqpVq8x55cqVjU0Kz8X9998fcQ7hlAcrBOLdeVaAYBdo2bKlzJw5M1V1gPvatm0b8p4vvvjCMcSGDOyBABDyv//+2ykJvoiYBArG8IexE9wibRB+7bXX5OLFiyZdfPEhNHAwQh8+fNipK/jnzp1b2rRpY6679Ud38eXHH3900sUACNKFDUy3juSrr74yeYimPSq5suJHIe5dLJqG0Ujz+eefV1OnTnUtqZw5c6pJkya5Fn+8RQxbS5kyZZQ2vJqs9ejRQ+lRQHPcrFkzpcXHla6Hnu2u9I+ISQf1Wb58eZOOFh9VqFAh43/ixAnTPdQGaXPu5h9wqFixotKG9yTJ3Hrrreq2225zhUOSxFLgwS5YlOUXQ8MHDx4083+GDRsW5dS9nRx+0T/77DOpWbOmaDuQnDt3TvQXX7QQmdFItIKwHMZN9+CDD4q2N5lWFpbZoBWELrMWQHn55ZejMgIFDsgDRpYwGvvUU0+JHgyRV155xUx8xRpEtzm4yTjaccdmAkUaSwmRGTdunFlmgeFPuCFDhhh7RIkSJczwLJrCdJElgCFm2H1++eUX0SNioo3Cpkt04MAByZ49e2QTSya22bNny/Dhw6Vnz55m3le/fv3knXfekWeeeSaZOyLvje7Wnj17jBDDLlavXj1B12zv3r3GHhT5FD0cYwpacnEVRD/sStselDYwK/3Qq3z58pmukJ50pfTERKVtBqp27dpmaFb3gV3L+9XWBUsM0r8LlvhaJM/9u2D+8fp3wfz9efw/AjZ0waxrAY0dO9YY/bAqXs9HMYtOH3vsMXn66afNCAh+EWF8w+jI6NGjPfzTwaKRgP0ErBMgDHt21QtNMQsWIxCY8QyHIWB/16VLF9myZYu/F49JgATijIB1AgTjH+Za+BzmX6ClkydPHp+X+b9u3TrzorIEnjwhARKIKwLWCRBaOphsholwMATCYW2Qb+U7DIF9+/Y165WwcJWOBEggfglYJ0B4yRgmF6IrpteBJSGLxZLjx483IgSRoiMBEohfAlbOhL7zzjvljjvuCDgTuVOnTgL7D5YI0JEACcQ3ASsFCEgxISzQdHdfVyy+sTN3JEACIGBdF4zVRgIk4B0CFCDv1CVLQgLWEaAAWVdlzDAJeIcABcg7dcmSkIB1BChA1lUZM0wC3iFAAfJOXbIkJGAdAQqQdVXGDJOAdwhQgLxTlywJCVhHgAJkXZUxwyTgHQIUIO/UJUtCAtYRoABZV2XMMAl4hwAFyDt1yZKQgHUEKEDWVRkzTALeIWDtani3qgBbrmCrlVAO29DgndR0JEAC4ROgACVipzeWE73PeSLfpKfYjgXvpaYjARIInwAFKBE7bP+LTyiHLYix9zwdCZBA+ARoAwqfHe8kARJIIwEKUBoB8nYSIIHwCVCAwmfHO0mABNJIgAKURoC8nQRIIHwCFKDw2fFOEiCBNBJIlQBh7svGjRvlzJkzcuHChTQmzdtJgASudgIpEiDsNnrvvfdKzpw5BVsjb968WQYOHGh2JD179uzVzpDlJwESCJNASAG6ePGitGnTRrZv3y6vvvqqZM+e3STVuHFjeffdd6V///5hJs3bSIAErnYCIWfSLV68WPbt22cEKE+ePDJkyBDD7J577pHcuXObXUiVUpIuXbqrnSXLTwIkkEoCIVtA2H+9cuXKAvFJ7OrUqSMHDhyQXbt2Jb7EcxIgARIISSCkAJUpU0aWL18uR44cSRLZJ598YpYjcDvkJGjoQQIkkAICIbtgN998s5QoUUKwSPOJJ56QK1euCFpFc+bMkQkTJkiHDh0kc+bMKUiKQUiABEggIYGQAoSRry+++EK6du1qxAa3d+rUycRy5513yuuvv54wRp6RAAmQQAoJhBQgxFO1alVZs2aNrF271rR+0OKBXeiGG25IYTLuBYMB/OjRo5IhQwbJnz+/ewkxZhIggYgTCGkDOnfunDE04/UTMDqjy4U5QRAfXFu6dGnEMxUqQozKYR5S6dKlTfevcOHCUqBAAWMoxzylAQMGmMmSoeLhdRIggdgSCNkC+uabb8zQO1pAiR38mjVrJseOHYta62P37t3SqFEjM+zfrl07KVu2rEkb0wCOHz8uO3fulE8//VQ+++wzWbJkiZQrVy5xtnlOAiQQJwQCCtD58+elc+fOphWB0a8dO3YYI7R/ntH12bp1q5kLlC9fPv9Lrh6PHj3atHwwPylLliwB0xo5cqS0bt1apk6dKkOHDg0Yhp4kQAKxJxCwC5Y1a1a59dZbTfcGb/1D6wJ2H/8PwqAlgpZGNCchrl+/3ohjcuIDpJkyZTJG8/nz58eeMHNAAiSQLIGALSCEfuihh8xn1apVMm3aNHnjjTcCRnLixImA/m55NmzY0MxLevTRR4Mmga4j5ycFRcSLJBBzAskKkC9neEH7qVOn5K677jKjTZcvXzaX8B8LUbFGLJor42EEhwgdOnRIOnbsaGw8MEDDSA4bEGZlT58+XebNmyfopkXLwSD/zjvvyLJly0yLEPOnIJIYnaNLPQGMbE6cONH82GC2Pd7E0FVPBaHzFoGAXTD/Iu7Zs8csRl2xYoXp2uB1HEWLFpWTJ0/Kpk2b5OWXX/YP7vpx9erVzStBsEi2S5cuRoyuu+46qVChgtSrV0/at29vhHHhwoXStGlT1/ODBCDGmKy5YMECue+++wTr5J5++mljHI+mOEelsFFIBD94hQoVMlM+MNKJkc1u3boZswBsj3TeIRCyBfTDDz+Y2c+///67+aLhwYBxFztH9OzZU/7444+o0yhfvrwZ4YIIYW8utHr++ecfs00OhAAtomg5fCFg8IYIzZ0710kWQlizZk0ZP368mUHuXOBBUAKoRwxqgN+UKVOMoOOHZNy4cYLpFhhgGDx4cNA4eNEeAiEFCM1ftCwwIxrummuukZ9++kluueUWMzyPXyi8pgOG32g7GMUhRvgkdqdPnzbr1LJly5b4UtBzdKXQugvlsCQFooPw6Hb5bGH79+83fnhtyccffyy1atUSTBfw2hY+6BLhByDSDiOuRYoUEawzhEMaYHvw4EH56KOPpHfv3sY2iakfqAM6uwmEFCAsRsXcGp+7/vrrTb8cAuQbfscLyxAunlzJkiWlZcuWMnPmzFRla/bs2fL444+HvAfCg3LDVoEvDEYF4bBMBfOjfIINOxkmcMJG5SWHblJqxT0l5YeAY9NHn9u2bZt8//338uKLLxrBOXz4sBF1iA/ezElnOQHdhQjqdAtI5cqVS2l7i9JGXqXfB6T05D61YcMGpefYKD3SpPTDEDSOWFx8/vnnle4qupa0Fhg1adIkpedMKd0dVfqLYdIaNGiQeumll8yxnjRp2F26dMm1fHgtYv1jp3QXWgVipqdVKN2t9VqRXSuPXkKl9LQV1+KPRMQhf5ZhcH7vvfcEc2rQDIbdB78+MAxikl/37t2jOg8opXo/bNgwefDBB1MaPOxwmI/02GOPmW6q/tI48eC4VatWpjXFkTAHS8iDUqVKyU033ZRkBjsmxGJuGpbZ0HmHQMguGIoKG0bbtm3NkDK+TD///LMsWrTINIWxFCJWTitwsuKHLhKcG92ExOUdO3asGbGBHax+/frG3jN58mQzCseZ2IlpBT/HpNZZs2ZJwYIFzet/8QoY2PM+/PBD8+YFTMOg8w6BkC0gfJFhiIbB1/dLnjdvXiNKMEjHYjEqRuFgc4LdpUGDBsYmlbhK8KBimD4aDl8avB8JL26D4GGEEEZUtBzpUk8AzxoGAj7//HOz3AatIjxn//nPf1IfGe+IawIhBQgziu+4446AhfAtRsUEwGg5tLwgLHgon3rqKfOmxiZNmsibb74ZrSwkmw4mSEIQkZ/atWsnG44XQhOA0R5dLm3LM9MYqlSpEvomhrCOQMAuWDwvRsXs2H/961/GJgXaw4cPN9MB+vbtK9pYHrVWj3U1zQyTQBwSCChAvsWoGJL2X4zqn390O7AYFa2RaC5Gxes4/LtWSBsGZ8zJwdIHrP9q0aKFf1Z5TAIkEKcEAgoQ8prSxajRLlexYsUE3cI+ffokSFoPfQuWjeBlaZg3QkcCJBD/BELagLAYNbmV8LEoHozLMPiitbNu3boEWcDIU7Nmzczo0y+//JLgGk9IgATij0BQAcLol//6JnRzxowZY5ZhPPLII4IFqtF2WCP0wgsvmGFZDM36O3QXZ8yYIXhZPtau0ZEACcQ3gWQFCAsBYU/xn/j1zDPPmFXeWDC4cuVKY2sJ9KpWt4uMkREM02LFeWKHiYHvv/++yZ9v947EYXhOAiQQHwQCChDW3/To0cPYU7766iuT0y1btpjWT69evYyNBV0cGKERLhYOhnLM0k7OYQEt9rSnIwESiF8CAQXo22+/NaNKmEiHd+3A+YQIrSA4jD5hGQbeD4RhezoSIAESSC2BgAKE1g1WcGNejc9BlCBGeN+Oz2HFObpjGH2iIwESIIHUEggoQFhqgdci+BxaOHjnTeL5NdgVA+ufMCuZjgRIgARSSyCgAOG1p5jw5xvKxj5bWBPmvyQDC0HxsvqKFSuadWKpTZjhSYAESCDgREQMY+OVCOiGwdCMhYBo/eAFX3AYfscrMrEuy/fmOqIkARIggdQSCNgCQrcK+33169fPtHww6xjnvrf64Z28mI2M11DgJex0JEACJBAOgYAtIESE14yOGjUqYJyYI3Tttdc6ghQwED1JgARIIASBZAUo2H00Ogejw2skQAIpJRCwC5bSmxmOBEiABNJCgAKUFnq8lwRIIE0EKEBpwsebSYAE0kKAApQWeryXBEggTQTCMkKnKcU4vxkTMNeuXRsyl9h2hxvjhcTEACQQlAAFKBEe7HU/ffr0RL5JT7EGDrue0pEACYRPgAKUiF3z5s0Fn1AOC3ULFy4cKhivkwAJBCFAG1AQOLxEAiTgLgEKkLt8GTsJkEAQAhSgIHB4iQRIwF0CFCB3+TJ2EiCBIAQoQEHg8BIJkIC7BChA7vJl7CRAAkEIUICCwOElEiABdwlQgNzly9hJgASCEKAABYHDSyRAAu4SoAC5y5exkwAJBCFAAQoCh5dIgATcJUABcpcvYycBEghCgAIUBA4vkQAJuEvAegHCBolHjhyR48ePu0uKsZMACUScgJUCtG/fPhk4cKCULl3a7MqK12IUKFBA8uTJI9WqVZMBAwbwZWERf1QYIQlEnoB17wPCGwuxW2u6dOmkXbt2UrZsWcmfP785Ryto586dgq2ksZHikiVLpFy5cpGnxhhJgAQiQsA6ARo9erRp+SxevFiyZMkSEMLIkSOldevWMnXqVBk6dGjAMPQkARKIPQHrumDr16+Xzp07Jys+QIqtpbt27Srz58+PPWHmgARIIFkC1glQw4YNZfny5ckWyHcBe9cXL17cd8r/JEACcUjAui5Yhw4dBCJ06NAh6dixo7HxwACdPn16MxK2a9cu81L5efPmCbppdCRAAvFLwDoBql69umzcuFG6d+8uXbp0kStXriSh26JFC1m4cKE0bdo0yTV6kAAJxA8B6wQI6MqXL29GuC5evCh//vmnoNWDbXKKFSsmJUqUMEPy8YOYOSEBEkiOgJUC5CtM5syZjRhBkOhIgATsI2C1AAXDffr0acmYMaNky5YtWLAk19asWSMzZsxI4p/Y4/z58/Lhhx/K9u3bE1xatmyZVK5cOYEfT0iABAIT8KwAlSxZUlq2bCkzZ84MXPJkfLNmzSpFihRJ5ur/vHPmzGm6fInD1qpVS2rWrPm/gDwiARJIloBnBahv375SoUKFZAue3IUbb7xR8AnlMNO6X79+0qBBg1BBeZ0ESCAZAp4VoGHDhiVTZHqTAAnECwHPCpDbgC9cuCDffvutrF27NkFSK1asMKvz8+XLl8A/GiewSx09etSMBEYjvcRp/PHHH2aZDOZkRdsdPHhQ0C3GJ9oO9sazZ8+mqOse6bxdvnxZ9u7dKw8++GCSqG14QwQFKEm1pczjrbfekilTphhDt/8dq1atMivxCxUq5O8dlWN8CfBFxBciFm7z5s1y7tw5Myk02unv2bNHcufObd6IEO20T548aeocU0Ci7SBAGAipU6dOkqRhIkiJOSHJjVH0SKffp6OimJ7nkxo8eLDkyJFDBg0aFPWyYokKXlPyww8/RD1tJIjXofiEINoZeOCBB6Rt27Zy//33RztpMxq6aNEis/g52okfO3ZMrrvuOtPyjXbakUgv+m3lNOa6du3akj179hR9OnXqlMbUeDsJkICbBKzrgr366qtyzz33CGZBP/fcc0Gb+xUrVnSTHeMmARJIIwHrBKhx48ami4E1Yej/Pvnkk2lEwNtJgARiRcC6LhhAoWUzfPhwGTFihKAPTEcCJGAnAetaQD7M/fv3NzOO0QqiIwESsJOAtQKUIUMGad68uZ3UmWsSIAFDwMouGOuOBEjAGwQoQN6oR5aCBKwkwImIEa42vCoWWwZhr7JoO8yEPnDgQMy2Ivr111/lhhtuCDo1wi0meDEdJkLiE22HmdCYfX7ttddGO2kzErxt2zapVKlS1NOORIIUoEhQZBwkQAJhEWAXLCxsvIkESCASBChAkaDIOEiABMIiQAEKCxtvIgESiAQBClAkKDIOEiCBsAhQgMLCxptIgAQiQYACFAmKjIMESCAsAhSgsLDxJhIggUgQoABFgiLjIAESCIsABSgsbLyJBEggEgQoQJGgyDhIgATCIkABCgtb8jfF+h3/eD8SXlcbC3flypVYJGvSjDX3mBXc8oQpQBGqwHXr1knHjh0F+4GVLVvWvLExQlGnOBoIQJs2beSxxx5L8T1pDfj333+b1+IWK1bMbFFUqlQpGTlypFy6dCmtUafo/gULFki7du0kV65cUrlyZcE7w2Phli5dahbhfv/991FJHjvzXn/99Uk+8LfJWftCsniCjFXo9957r9SrV89sVrhhwwbp3bu3eSCxTU80HDZKxFsi582bJ126dIlGkiaNXr16yZw5c4wI3XzzzeZ4yJAhZn8wvDbXTYcV8NiKp2vXrrJkyRLzrvCnn35a0Bp64okn3Ew6QdxnzpyRbt26mXQTXHDxBBtg4rlD2f1dmTJl/E/j/1hXFl0aCegvnNKb4im9KZ8T09ChQ1XBggWV3q3U8XPrYM2aNUq/jkHlzZtX6deAKC1AbiWVIF79Ggqld0FVTz31VAJ/vWuJyUcCTxdOHnnkEVWuXDmlu51O7HfffbeqVq2acx6Ngx49eijd+sL+ekq3hKKRpLrllluUFp+opOVmIuyCReA3At2A1q1bS9asWZ3Y8MuMbZJXr17t+Ll18O6770rx4sUF3UB0/6LlYG96++23pWfPngmSxK8w3o+jH9wE/pE+GTdunCxbtizB+4ewM2ymTJkinVSy8S1evFhmzJghr7/+erJh3LiwceNGqVGjhok6lra3tJaNApRWgvr+HTt2GAHwjwqCAIcvhNtu2LBhsnDhQrMvu9tp+cefP39+Y2/yb/bjy/Dxxx+b7ihezOamg+Bfc801JgnUATisXLlS+vbt62ayTtynTp2Shx56SMaOHSuwgUXL4Zk6cuSIbN26VdDtBYeaNWsaMY5WHiKVDm1AESCJB7FAgQIJYtLdIXOONyS67WKxD31yZXr22WfNWxk///zz5IJE3H/nzp1SoUIFE+/tt98uHTp0iHgagSJ8/PHHzRsgYf/ZsmVLoCCu+MHGCIetuGGDgwhNnDjR/F+7dq1UrVrVlXTdiJQtoAhQRZM/8a+97/yff/6JQAp2RIF92l555RUZNWqU1K1bN2qZhgBDAPAl3LRpk9SvX9/1UTgY+2fNmiWTJk2KWjl9CeG1t0gXI2/du3c3OwRrO6Cg9YlWoE2OLaAI1FbRokXlxIkTCWLCe4LhMDx8NThtiJYxY8YY8Yn2brU5c+Z0hqPBGy0gdMUaNWrkCnpMPXj00UdFG7wFrS98du/ebdKCHS5HjhxSq1YtV9JGpCVLljTp+ydQpEgRadKkifhaR/7X4vmYAhSB2oEAJbb14OXwcHqUJgIpxHcUEBzMv0ELJJpzkDDnBvOuqlSp4gBq2bKlOV61apVrAnT48GHZv3+/fPDBB+bjJK4PMBWiTp06gvTdcph+gPTR0vN3sAVF0wDvn3a4x+yChUvO774WLVrI/PnzzQ4FPu+5c+eKHpp39ZfQl1Ys/6PLBfH56KOPoio+KHOfPn2SzHkCd7jy5cub/278we4XaPH4fzAaBjdz5kyZPXu2G8k6cU6ePFkaNmxojNA+T7S4MReqdu3aPi87/rs5xn+1xK1/jZT+5VF68qE6fvy4+u6775QeIVKvvfZa1BHoX8WozQPau3evyp49u9IPvdI2iSQfvSTE1fK/+eabZu6NnvCodAtUaRFUehqC0kZY5XbaiQu2efPmqM0D0tvwqGzZsind2lPr169XeqBDderUSWXJkkXprZESZy2uzzFXgy4CBL7++msz8VD/7Bjx0V0RpZcjRCDm1EURTQHSc1/Mlw5lDvT566+/Upf5MEI///zz5ovnS79Vq1Zq165dYcSUtluiKUDIKZ43bQtyuOsWn9Kzo9NWiBjczX3B9JMbKafrzzTLS5QoYdZFRSpexhOcAJahwBCMuTjo9l4tDs+bboVK5syZBUZoGx0FyMZaY55JwCMEaIT2SEWyGCRgIwEKkI21xjyTgEcIUIA8UpEsBgnYSIACZGOtMc8k4BECFCCPVCSLQQI2EqAA2VhrzDMJeIQABcgjFclikICNBChANtYa80wCHiFAAfJIRbIYJGAjAQqQjbXGPJOARwhQgDxSkSwGCdhIgAJkY60xzyTgEQIUII9UJItBAjYSoADZWGvMMwl4hAAFyCMVyWKQgI0EKEA21hrzTAIeIUAB8khFshgkYCMBCpCNtcY8k4BHCFCAPFKRLAYJ2EiAAmRjrTHPJOARAhQgj1Qki0ECNhKgANlYa8wzCXiEAAXIIxXJYpCAjQQoQDbWGvNMAh4hQAHySEWyGCRgIwEKkI21Fmd5njdvnqRLly7op169eibX+fLlk1GjRsVZCZidWBHIGKuEma53CFSvXl0+/PBDp0CzZs2S2bNnJ/ArWLCguX7//ffLjTfe6ITlwdVNgHvDX93170rpn3vuOXnppZdEKeVK/IzUOwTYBfNOXVpRkmbNmsmUKVNMXn/88UepX7++/Prrr9KyZUvJnz+/tGrVSnbu3Clr166Vpk2bStGiRaVPnz6yd+/eBOV77733pEaNGpIrVy6pW7euaXElCMATKwhQgKyoJu9kcsOGDXLo0CFToFOnTsnq1avl1ltvlQYNGsjgwYMF1++66y5p166d1KlTR9Camjp1qowfP96BMHr0aOnRo4dUqlRJpk2bJo0aNZI777xTPvvsMycMDywhoJvJdCQQUQJaSND3Chhn3rx51X//+19zbf78+SbciBEjnLADBw40fr4wuDBgwABVpUoVE+bEiRMqd+7cqlu3bs49OGjfvr0qX758Aj+exD8BGqEt+aHwcjYbN27sFE8LjTm+7bbbHL9ixYrJjh07zPn69esFLadq1arJihUrnDAVKlSQGTNmyJEjR6RQoUKOPw/imwAFKL7r56rIXfHixZ1ypk///1aBUqVKOX4ZMmRwjnfv3m2O+/fv7/j5H+zatYsC5A8kzo8pQHFeQVdD9vwFJlR5YaiGW7lypTE+Jw6P+Uh09hCgEdqeumJONYHKlSubCY/obvlPfpwwYYIxXJ8/f56cLCJAAbKosphVkbJly4o2OMvkyZNlzJgxZkTtyy+/lCeffNKMimXNmpWYLCJAAbKospjV/ycwceJEM1T/7LPPmnlCvXr1ko4dOwrO6ewiwJnQdtUXc+tH4OLFi7Jv3z4pXbq06Y75XeKhJQQoQJZUFLNJAl4kwC6YF2uVZSIBSwhQgCypKGaTBLxIgALkxVplmUjAEgIUIEsqitkkAS8SoAB5sVZZJhKwhAAFyJKKYjZJwIsEKEBerFWWiQQsIUABsqSimE0S8CIBCpAXa5VlIgFLCFCALKkoZpMEvEiAAuTFWmWZSMASAhQgSyqK2SQBLxKgAHmxVlkmErCEAAXIkopiNknAiwQoQF6sVZaJBCwhQAGypKKYTRLwIgEKkBdrlWUiAUsIUIAsqShmkwS8SIAC5MVaZZlIwBICFCBLKorZJAEvEqAAebFWWSYSsIQABciSimI2ScCLBP4PY2q/lVHS6jQAAAAASUVORK5CYII=" /><!-- --></p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Asger Hobolth and Eric A Stone. <em>Simulation from endpoint-conditioned, continuous-time Markov chains on a finite state space, with applications to molecular evolution.</em> The Annals of Applied Statistics, 3(3):1204, 2009.</p>
+<p>Daniel T Gillespie. <em>A general method for numerically simulating the stochastic time evolution of coupled chemical reactions.</em> Journal of computational physics, 22(4):403–434, 1976</p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
