@@ -1,0 +1,73 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage[top=1in, bottom=1in, left=0.6in, right=.8in]{geometry}
+\usepackage{multicol}
+\usepackage{wrapfig}
+\usepackage{listings}
+\usepackage{enumerate}
+\usepackage{comment}
+\usepackage{tikz}
+\usepackage{array}
+\usepackage[ruled,vlined]{algorithm2e}
+
+\newcommand{\p}{ \mathbb{P} }
+\newcommand{\E}{ \mathbb{E}}
+\newcommand{\R}{ \mathbb{R} }
+\newcommand{\grad} {\nabla }
+
+\usepackage{cancel}
+\usepackage{graphicx}
+	% package that allows you to include graphics
+\usepackage{centernot}
+    % scrolly U
+\usepackage{ mathrsfs }
+\graphicspath{ {assets/} }
+
+\setlength{\columnsep}{0.1pc}
+
+\begin{document}
+
+\noindent
+STATS215 \hfill \textbf{project} \newline 
+{Spring 2019} \hfill 
+
+\noindent
+\rule{\linewidth}{0.4pt}
+
+\vspace{.4cm}
+\begin{enumerate}
+    \item [(5)]
+    The joint posterior distribution with data augmentation, introducing subject-paths as latent variables. 
+
+    \begin{equation}
+        \pi(\mathbf{\theta}, \mathbf{X} | \mathbf{Y}) \propto \text{Pr}(\mathbf{Y} | \mathbf{X}, \rho) \times \pi (\mathbf{X} | \mathbf{X} (t_1), \beta, \mu) \times \p(\mathbf{X}(t_1) | \mathbf{p}_{t_1} ) \times \pi(\beta) \pi(\mu) \pi(\rho) \pi(\mathbf{p}_{t_1})
+    \end{equation}
+
+    \item [(6)]
+    Let us introduce the variable $\mathcal{I}_\tau ^{(-j)}$, the count of the infected individuals at time $\tau$ excluding individual $j$. That is, let \[ \mathcal{I}_\tau ^{(-j)} = \sum_{i \neq j} \mathbb{I} (\mathbf{X}_i (\tau ) = I)\]
+
+    Infinitesimal generator matrix: 
+    \begin{equation}   
+        \mathbf{\Lambda}_m^{(j)} (\mathbf{\theta}) = \begin{pmatrix}
+            -\beta I_{\tau_{m}} ^{(-j)}  & \beta  I_{\tau_{m}} ^{(-j)} & 0 \\ 
+            0 & -\mu & \mu \\ 
+            0 & 0 & -\mu \\
+        \end{pmatrix}
+    \end{equation}
+
+    The transition probability matrix for subject $j$ over interval $I_m$: \[ \textbf{P}^{(j)} (\tau_{m - 1}, \tau_{m}) = \big( p_{a,b}^{(j)} (\tau_{m-1}, \tau_m) \big)_{a, b \in \mathcal{S}_j}\]
+
+    but this really turns out to be the matrix exponential: \[ \textbf{P}^{(j)} (\tau_{m - 1}, \tau_{m}) = \text{exp} \big[ (\tau_m - \tau_{m-1}) \mathbf{\Lambda}_m^{(-j)} (\mathbf{\theta}) \big]\]
+
+    \item[(7)]
+    We have the time-inhomogeneous CTMC density over the observation period $[t_1, t_L]$, denoted $\pi(\mathbf{X}_j | \mathbf{x_{(-j)}}, \mathbf{\theta}) \equiv \pi(\mathbf{X}_j | \mathbf{\Lambda}^{(-j)}(\mathbf{\theta}); \mathcal{I})$. Note that it is only time-inhomogeneous because the transition rate matrix varies as a function of the count of currently infected individuals. Thus, we can decompose the time-inhomogeneous density into a product of time-homogeneous densities for each period of where the number of infected does not change. This is given by: 
+    \begin{equation}
+    \pi (\mathbf{X}_j | \mathbf{\Lambda}^{(-j)}; \mathcal{I}) = \text{Pr}(\mathbf{X}_j(t_1) | \mathbf{p}_{t_{1}}) \times \prod_{m=1}^M \pi\big( \mathbf{X}_j | \mathbf{x}_j(\tau_{m-1}), \mathbf{\Lambda}_m^{(-j)}(\mathbf{\theta}); \mathcal{I}_m \big)
+    \end{equation}
+\end{enumerate}
+\newpage
+
+
+\end{document}

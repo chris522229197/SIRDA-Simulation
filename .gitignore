@@ -1,3 +1,13 @@
+# latex intermedaites
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
+
+# powerpoint intermediates
+*~$
+
 # History files
 .Rhistory
 .Rapp.history
