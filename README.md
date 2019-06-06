@@ -1,19 +1,12 @@
 # SIRDA-Simulation
 
-Simulation study for the SIR data augmentation by Fintzi, Wakefield, and Minin.
-
-
+Simulation study for the SIR Bayesian data augmentation by Fintzi, Cui, Wakefield, and Minin (2017).
 
 ## Dependencies 
 
-Idk if anyone else had issues building the vignettes in RMarkdown as described in the readme of the authors' repo, but I went into their repo and copy pasted out the vignette files and added them to this repo for easier visualization. 
-
+- `BDAepimodel` for fitting Bayesian data-augmented stochastic epidemic model as in Fintzi et al. (2017): run `install_github('fintzij/BDAepimodel')` to install the package. The code repository is https://github.com/fintzij/BDAepimodel.
 
 ## Other notes
 
 I've been using latex2png for putting equations into the powerpoint as transparent images, seems to work p well. 
 http://latex2png.com/
-
-
-The actual repo w/ the code from the authors
-https://github.com/fintzij/BDAepimodel
