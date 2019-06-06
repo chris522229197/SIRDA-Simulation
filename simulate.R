@@ -1,12 +1,41 @@
-# library(devtools)
-# install_github('fintzij/BDAepimodel')
+#!/usr/bin/env Rscript
+library(optparse)
 library(BDAepimodel)
+
+# Command line arguments ------------------------------
+option_list = list(make_option(c("-b", "--beta"), type = "double", default = 0.00035, 
+                               help = "Beta infection rate [default = %default]", metavar = "double"), 
+                   make_option(c("-m", "--mu"), type = "double", default = 0.15, 
+                               help = "Mu recovery rate [default = %default]", metavar = "double"), 
+                   make_option(c("-r", "--rho"), type = "double", default = 0.2, 
+                               help = "Rho disease detection probability [default = %default]", metavar = "double"), 
+                   make_option(c("-N", "--popsize"), type = "integer", default = 20, 
+                               help = "Population size [default = %default]", metavar = "integer"), 
+                   make_option(c("-t", "--niter"), type = "integer", default = 100, 
+                               help = "Number of iterations for MCMC [default = %default]", metavar = "integer"),
+                   make_option(c("-o", "--obsint"), type = "integer", default = 7, 
+                               help = "Length of observation interval [default = %default] (total period = [0, 105])", metavar = "integer"), 
+                   make_option(c("-v", "--verbose"), action = "store_true", default = FALSE, 
+                               help = "Flag for monitoring MCMC progress")
+)
+opt_parser = OptionParser(option_list = option_list)
+opt = parse_args(opt_parser)
+
+# Read in the command line arguments
+beta <- opt$beta
+mu <- opt$mu
+rho <- opt$rho
+popsize <- opt$popsize
+niter <- opt$niter
+obsint <- opt$obsint
+verbose <- opt$verbose
 
 # NOTE: Code from the vignette The BDAepimodel package for fitting stochastic epidemic models to 
 # disease prevalence data via Bayesian data augmentaiton
 # by Jon Fintzi, Xiang Cui, Jon Wakefield, Vladimir Minin
 
-
+# Simulate data ------------------------------
+# Randomly sample for the measurement process
 r_meas_process <- function(state, meas_vars, params){
   # in our example, rho will be the name of the binomial sampling probability parameter.
   # this function returns a matrix of observed counts
@@ -14,6 +43,8 @@ r_meas_process <- function(state, meas_vars, params){
          size = state[,meas_vars], # binomial sample of the unobserved prevalenc
          prob = params["rho"])     # sampling probability
 }
+
+# Density for the measurement process
 d_meas_process <- function(state, meas_vars, params, log = TRUE) {
   # note that the names of the measurement variables are endowed with suffixes "_observed" and "_augmented". This is required.
   # we will declare the names of the measurement variables shortly.
@@ -22,12 +53,13 @@ d_meas_process <- function(state, meas_vars, params, log = TRUE) {
          prob = params["rho"], log = log)
 }
 
-epimodel <- init_epimodel(obstimes = seq(0, 105, by = 7),                             # vector of observation times
-                          popsize = 750,                                              # population size
+# Initialize the stochastic epidemic dynamic object
+epimodel <- init_epimodel(obstimes = seq(0, 105, by = obsint),                        # vector of observation times
+                          popsize = popsize,                                          # population size
                           states = c("S", "I", "R"),                                  # compartment names
-                          params = c(beta = 0.00035,                                  # infectivity parameter
-                                     mu = 1/7,                                        # recovery rate
-                                     rho = 0.2,                                       # binomial sampling probability
+                          params = c(beta = beta,                                     # infectivity parameter
+                                     mu = mu,                                         # recovery rate
+                                     rho = rho,                                       # binomial sampling probability
                                      S0 = 0.9, I0 = 0.03, R0 = 0.07),                 # initial state probabilities
                           rates = c("beta * I", "mu"),                                # unlumped transition rates
                           flow = matrix(c(-1, 1, 0, 0, -1, 1), ncol = 3, byrow = T),  # flow matrix
@@ -35,11 +67,10 @@ epimodel <- init_epimodel(obstimes = seq(0, 105, by = 7),                       
                           r_meas_process = r_meas_process,                            # measurement process functions
                           d_meas_process = d_meas_process)
 
-epimodel <- simulate_epimodel(epimodel = epimodel, lump = TRUE, trim = TRUE)
-plot(x = epimodel$pop_mat[,"time"], y = epimodel$pop_mat[,"I"], "l", ylim = c(-5, 200), xlab = "Time", ylab = "Prevalence")
-points(x = epimodel$dat[,"time"], y = epimodel$dat[,"I"])
+# Simulate the epidemic and observed data
+simulated_epimodel <- simulate_epimodel(epimodel = epimodel, lump = TRUE, trim = TRUE)
 
-
+# Rcpp helper function for computing sufficient statistics ------------------------------
 Rcpp::cppFunction("Rcpp::NumericVector getSuffStats_SIR(const Rcpp::NumericMatrix& pop_mat, const int ind_final_config) {
                   
                   // initialize sufficient statistics
@@ -75,7 +106,7 @@ Rcpp::cppFunction("Rcpp::NumericVector getSuffStats_SIR(const Rcpp::NumericMatri
                   return Rcpp::NumericVector::create(num_inf, beta_suff, num_rec, mu_suff);
                   }")
 
-
+# Gibbs sampler ------------------------------
 gibbs_kernel_SIR <- function(epimodel) {
   
   # get sufficient statistics using the previously compiled getSuffStats_SIR function (above)
@@ -125,16 +156,16 @@ gibbs_kernel_SIR <- function(epimodel) {
   return(epimodel)
 }
 
-# grab the data that was simulated previously. No need to redefine the measurement process functions, they remain unchanged.
-dat <- epimodel$dat 
-chain <- 1 # this was set by a batch script that ran chains 1, 2, and 3 in parallel
-set.seed(52787 + chain)
-# initial values for initial state parameters
+# Fit the stochastic epidemic model ------------------------------
+# Grab the data that was simulated previously. No need to redefine the measurement process functions, they remain unchanged.
+dat <- simulated_epimodel$dat
+
+# Initial values for initial state parameters
 init_dist <- MCMCpack::rdirichlet(1, c(9,0.5,0.1))
-epimodel <- init_epimodel(popsize = 750,                                                       # population size
+epimodel <- init_epimodel(popsize = popsize,                                                   # population size
                           states = c("S", "I", "R"),                                           # compartment names
-                          params = c(beta = abs(rnorm(1, 0.00035, 5e-5)),                      # per-contact infectivity rate
-                                     mu = abs(rnorm(1, 1/7, 0.02)),                            # recovery rate
+                          params = c(beta = abs(rnorm(1, beta, beta*0.1)),                     # per-contact infectivity rate
+                                     mu = abs(rnorm(1, mu, mu*0.002)),                         # recovery rate
                                      rho = rbeta(1, 21, 75),                                   # binomial sampling probability
                                      S0 = init_dist[1], I0 = init_dist[2], R0 = init_dist[3]), # initial state probabilities
                           rates = c("beta * I", "mu"),                                         # unlumped transition rates
@@ -146,16 +177,37 @@ epimodel <- init_epimodel(popsize = 750,                                        
                           r_meas_process = r_meas_process,
                           d_meas_process = d_meas_process)
 
+# Set up MCMC settings
 epimodel <- init_settings(epimodel,
-                          niter = 1000,  # this was set to 100,000 in the paper
+                          niter = niter,  # this was set to 100,000 in the paper
                           save_params_every = 1, 
-                          save_configs_every = 250, # this was set to 250 in the paper 
+                          save_configs_every = niter/10, # this was set to 250 in the paper 
                           kernel = list(gibbs_kernel_SIR),
-                          configs_to_redraw = 25, # this was set to 75 in the paper
+                          configs_to_redraw = 75, # this was set to 75 in the paper
                           analytic_eigen = "SIR", # compute eigen decompositions and matrix inverses analytically
                           ecctmc_method = "unif")   # sample subject paths in interevent intervals via modified rejection sampling
-epimodel <- fit_epimodel(epimodel, monitor = FALSE)
+tic <- proc.time()
+fitted_epimodel <- fit_epimodel(epimodel, monitor = verbose)
+toc <- proc.time()
 
-ts.plot(epimodel$results$params[,"beta"], ylab = expression(beta))
-plot_latent_posterior(epimodel, 
-                      states = "I", times = epimodel$obstimes, cm = "mn")
+# Save files ------------------------------
+file_suffix <- paste0("beta=", beta, "_", 
+                      "mu=", mu, "_", 
+                      "rho=", rho, "_", 
+                      "popsize=", popsize, "_", 
+                      "niter=", niter, "_", 
+                      "obsint=", obsint)
+
+file_dir <- paste0("results/", file_suffix, "/")
+if (!dir.exists(file_dir)) {
+  dir.create(file_dir)
+}
+
+saveRDS(simulated_epimodel, file = paste0(file_dir, "simulated_epimodel.rds"))
+saveRDS(fitted_epimodel, file = paste0(file_dir, "fitted_epimodel.rds"))
+
+profile_file <- paste0(file_dir, "profile.txt")
+cat("MCMC runtime", "\n", file = profile_file)
+cat("User:", toc[1] - tic[1], "\n", file = profile_file, append = TRUE)
+cat("System:", toc[2] - tic[2], "\n", file = profile_file, append = TRUE)
+cat("Elapsed:", toc[3] - tic[3], file = profile_file, append = TRUE)
