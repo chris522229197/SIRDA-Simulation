@@ -1,10 +1,14 @@
 # SIRDA-Simulation
 
-Simulation study for the SIR Bayesian data augmentation by Fintzi, Cui, Wakefield, and Minin (2017).
+Simulation study for the SIR Bayesian data augmentation by Fintzi, Cui, Wakefield, and Minin (2017). 
+
+## Instruction
+
+To run the simulation, execute `Rscript simulate.R` with the command line parameters. To see details about the parameters, run `Rscript simulate.R --help`.
 
 ## Dependencies 
 
-- `BDAepimodel` for fitting Bayesian data-augmented stochastic epidemic model as in Fintzi et al. (2017): run `install_github('fintzij/BDAepimodel')` to install the package. The code repository is https://github.com/fintzij/BDAepimodel.
+- R package `BDAepimodel` for fitting Bayesian data-augmented stochastic epidemic model as in Fintzi et al. (2017): run `install_github('fintzij/BDAepimodel')` to install the package. The code repository is https://github.com/fintzij/BDAepimodel.
 
 ## Other notes
 
