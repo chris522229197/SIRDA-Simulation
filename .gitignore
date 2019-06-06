@@ -8,6 +8,9 @@
 # powerpoint intermediates
 *~$
 
+# OS files
+*.DS_Store
+
 # History files
 .Rhistory
 .Rapp.history
