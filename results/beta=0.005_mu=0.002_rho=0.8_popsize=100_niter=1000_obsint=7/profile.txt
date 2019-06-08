@@ -1,0 +1,4 @@
+MCMC runtime 
+User: 87.355 
+System: 0.881 
+Elapsed: 88.945

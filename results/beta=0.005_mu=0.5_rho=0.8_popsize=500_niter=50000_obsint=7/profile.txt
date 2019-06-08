@@ -1,0 +1,4 @@
+MCMC runtime 
+User: 19842.21 
+System: 218.092 
+Elapsed: 20099.3
