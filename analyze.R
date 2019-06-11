@@ -18,17 +18,17 @@ plot_fitted_dynamics <- function(fitted_epimodel) {
 plot_trace <- function(fitted_epimodel, burn_in = 10000) {
   # Beta
   ts.plot(fitted_epimodel$results$params[ , "beta"], ylab = expression("Sampled" ~ beta), 
-          gpars = list(xlab = "Iteration"))
+          gpars = list(xlab = "Iteration", cex.lab = 5))
   abline(v = burn_in, col = "red", lty = 2)
   
   # Mu
   ts.plot(fitted_epimodel$results$params[ , "mu"], ylab = expression("Sampled" ~ mu), 
-          gpars = list(xlab = "Iteration"))
+          gpars = list(xlab = "Iteration", cex.lab = 5))
   abline(v = burn_in, col = "red", lty = 2)
   
   # Rho
   ts.plot(fitted_epimodel$results$params[ , "rho"], ylab = expression("Sampled" ~ rho), 
-          gpars = list(xlab = "Iteration"))
+          gpars = list(xlab = "Iteration", cex.lab = 5))
   abline(v = burn_in, col = "red", lty = 2)
 }
 
@@ -50,7 +50,7 @@ get_posmed <- function(fitted_epimodel, burn_in = 10000, credible_lvl = 0.05) {
   # Rho
   rhos <- fitted_epimodel$results$params[-burnt_idx, "rho"]
   rho_med <- signif(median(rhos), 3)
-  rho_ci <- signif(quantile(mus, probs = quants), 3)
+  rho_ci <- signif(quantile(rhos, probs = quants), 3)
   
   # Print results
   print(paste0("beta: ", beta_med, " (", beta_ci[1], " - ", beta_ci[2], ")"))
@@ -76,8 +76,8 @@ for (result_dir in result_dirs) {
   dev.off()
   
   # Plot and save trace plots
-  png(filename = paste0(result_dir, "traceplots.png"), height = 480 * 3)
-  par(mfcol = c(3, 1))
+  png(filename = paste0(result_dir, "traceplots.png"), width = 600, height = 600)
+  par(mfrow = c(3, 1))
   plot_trace(fitted_epimodel)
   dev.off()
   
